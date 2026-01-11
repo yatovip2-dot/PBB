@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ thống Ôn thi Trắc nghiệm</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-in { animation: slideIn 0.3s ease-out forwards; }
+    </style>
+</head>
+<body class="bg-slate-50 min-h-screen flex flex-col items-center p-4 font-sans select-none">
+
+    <!-- NÚT THOÁT / ĐĂNG XUẤT -->
+    <div class="fixed top-4 left-4 flex gap-2 z-50">
+        <button id="main-back-btn" onclick="handleBack()" class="hidden bg-white px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all duration-200 font-bold text-slate-600 flex items-center gap-2 border border-slate-200">
+            <span>←</span> Quay lại
+        </button>
+        <button id="logout-btn" onclick="logout()" class="hidden bg-white px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all duration-200 font-bold text-red-500 flex items-center gap-2 border border-red-100">
+            <span>Đăng xuất</span>
+        </button>
+    </div>
+
+    <!-- LEVEL 0: ĐĂNG NHẬP -->
+    <div id="level-0" class="flex flex-col items-center justify-center mt-32 w-full max-w-sm animate-slide-in">
+        <div class="bg-white p-8 rounded-3xl shadow-xl w-full border border-slate-100">
+            <h1 class="text-2xl font-black text-slate-800 text-center mb-6 uppercase">Đăng nhập</h1>
+            <input type="text" id="username-input" placeholder="Nhập tên người dùng..." class="w-full px-5 py-4 rounded-2xl border-2 border-slate-100 focus:border-indigo-500 outline-none mb-4 transition-all font-medium text-lg text-center">
+            <button onclick="login()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-4 rounded-2xl shadow-lg shadow-indigo-200 transition-all active:scale-95">Vào hệ thống</button>
+        </div>
+    </div>
+
+    <!-- LEVEL 1: CHỌN MÔN HỌC -->
+    <div id="level-1" class="hidden flex-col items-center gap-8 mt-20 animate-slide-in w-full max-w-4xl">
+        <div class="text-center bg-white px-8 py-4 rounded-2xl shadow-sm border border-slate-100">
+            <p class="text-slate-500 font-medium">Xin chào thành viên,</p>
+            <h2 id="display-name" class="text-2xl font-black text-indigo-600"></h2>
+        </div>
+        
+        <div class="flex flex-col md:flex-row gap-6">
+            <button onclick="selectSubject(1)" class="group w-64 h-64 bg-white border-b-4 border-blue-500 rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all p-6 flex flex-col items-center justify-center text-center">
+                <div class="text-5xl mb-4 group-hover:scale-110 transition-transform">🚛</div>
+                <span class="text-xl font-bold text-slate-700">Trang thiết bị phương tiện cơ bản</span>
+            </button>
+            <button onclick="selectSubject(2)" class="group w-64 h-64 bg-white border-b-4 border-orange-500 rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all p-6 flex flex-col items-center justify-center text-center">
+                <div class="text-5xl mb-4 group-hover:scale-110 transition-transform">🖐️</div>
+                <span class="text-xl font-bold text-slate-700">Chỉ tay cơ bản <br>(Cầu ống dẫn khách)</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- LEVEL 2: MENU CHẾ ĐỘ THI & KẾT QUẢ -->
+    <div id="level-2" class="hidden flex-col gap-4 w-full max-w-md mt-10 animate-slide-in">
+        <div id="mode-selection" class="flex flex-col gap-4">
+            <h2 id="subject-title" class="text-center text-xl font-black text-slate-800 uppercase mb-2"></h2>
+            <button id="btn-full-quiz" onclick="startQuiz('full')" class="w-full h-16 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md font-bold text-lg transition-colors flex items-center justify-center gap-3">
+                <span>📝</span> Làm toàn bộ câu hỏi
+            </button>
+            <button onclick="startQuiz('random')" class="w-full h-16 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl shadow-md font-bold text-lg transition-colors flex items-center justify-center gap-3">
+                <span>🎲</span> Thi ngẫu nhiên 50 câu
+            </button>
+            <p id="history-info" class="text-center text-xs text-slate-400 italic mt-2 px-4"></p>
+        </div>
+
+        <div id="result-board" class="hidden flex-col gap-4 bg-white p-6 rounded-2xl shadow-xl border border-slate-100 animate-slide-in">
+            <div class="text-center">
+                <p class="text-slate-500 font-bold uppercase text-sm tracking-wider">Kết quả đạt được</p>
+                <div class="text-7xl font-black text-indigo-600 my-2" id="final-score">0/0</div>
+                <div id="result-status" class="inline-block px-4 py-1 rounded-full text-sm font-bold mb-4"></div>
+            </div>
+            <div class="grid grid-cols-7 gap-2 max-h-60 overflow-y-auto no-scrollbar p-1" id="result-grid"></div>
+            <div class="flex gap-3 mt-4">
+                <button onclick="resetApp()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-3 rounded-xl transition-all">Làm lại</button>
+                <button onclick="goHome()" class="flex-1 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold py-3 rounded-xl transition-all">Trang chủ</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- LEVEL 3: KHU VỰC LÀM BÀI -->
+    <div id="level-3" class="hidden flex-col w-full max-w-2xl h-full mt-4 pb-24">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <span id="q-idx-label" class="text-indigo-600 font-black text-3xl">Câu 1</span>
+                <span id="q-total-label" class="text-slate-400 ml-2 font-medium">/ 0</span>
+            </div>
+            <button id="submit-btn" onclick="confirmSubmit()" class="bg-red-500 hover:bg-red-600 text-white px-6 py-2 rounded-full font-bold shadow-lg transition-all active:scale-95">Nộp bài</button>
+            <button id="view-result-btn" onclick="showResults()" class="hidden bg-slate-800 text-white px-6 py-2 rounded-full font-bold shadow-lg">Xem bảng điểm</button>
+        </div>
+
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 mb-8">
+            <p id="question-text" class="text-slate-800 text-xl font-semibold leading-snug"></p>
+        </div>
+
+        <div id="options-list" class="flex flex-col gap-4"></div>
+
+        <div class="fixed bottom-0 left-0 w-full bg-white/80 backdrop-blur-md border-t border-slate-200 p-4 flex justify-between items-center z-40">
+            <button onclick="changeQuestion(-1)" class="px-6 py-3 bg-slate-100 text-slate-600 rounded-2xl font-bold active:scale-95 transition-all">← Trước</button>
+            <button onclick="showResults()" class="w-12 h-12 flex items-center justify-center bg-indigo-50 text-indigo-600 rounded-xl font-bold">☰</button>
+            <button onclick="changeQuestion(1)" class="px-6 py-3 bg-indigo-600 text-white rounded-2xl font-bold active:scale-95 transition-all shadow-md shadow-indigo-200">Tiếp theo →</button>
+        </div>
+    </div>
+
+    <script>
+        const DATABASE = {
+            1: {
+                title: "Trang thiết bị phương tiện",
+                questions: [
+                    { q: "Nghị định 05/2021/NĐ-CP quy định việc cấp biển kiểm soát phương tiện chuyên ngành do đơn vị nào?", a: ["Cảng vụ hàng không", "Cục hàng không", "Công an cửa khẩu", "Doanh nghiệp tự cấp"], c: 0 },
+                    { q: "Biển số phương tiện chuyên ngành bị thu hồi khi nào?", a: ["Hết niên hạn sử dụng", "Doanh nghiệp không còn nhu cầu", "Cả A và B đều đúng", "Cả A và B đều sai"], c: 2 },
+                    { q: "Cơ quan thẩm định và cấp Giấy phép nhân viên điều khiển thiết bị hàng không là?", a: ["Cảng vụ hàng không", "Cục hàng không Việt Nam", "Công an cửa khẩu", "Đơn vị trực tiếp quản lý"], c: 1 },
+                    { q: "Nội dung nào PHẢI có trên Giấy phép điều khiển phương tiện trong khu bay?", a: ["Số giấy phép, cơ quan cấp", "Họ tên, ngày sinh, ảnh", "Năng định, phạm vi hoạt động", "Tất cả các ý trên"], c: 3 },
+                    { q: "Khi điều khiển phương tiện tiếp cận tàu bay, hành vi nào bị CẤM?", a: ["Quan sát trước sau", "Tăng tốc hoặc phanh đột ngột", "Làm chủ tốc độ", "Tuân thủ giới hạn tốc độ"], c: 1 }
+                ]
+            },
+            2: {
+                title: "Chỉ tay cơ bản (Cầu dẫn)",
+                questions: [
+                    { q: "Câu 1: Trong trường hợp tốc độ gió vượt quá bao nhiêu knots (hoặc km/h) thì cầu ống dẫn khách sau khi cập vào tàu bay phải được chèn bánh và hệ thống điều khiển phải được khóa để tránh tác động ngoài ý muốn?", a: ["a. Từ 25 đến 39 kts (46 đến 72 km/h)", "b. Từ 40 đến 59 kts (73 đến 110 km/h)", "c. Từ 60 kts trở lên (từ 111 km/h)", "d. Cả a và b."], c: 0 },
+                    { q: "Câu 2: Biển số của phương tiện chuyên ngành hoạt động tại cảng hàng không, sân bay bị thu hồi trong trường hợp nào?", a: ["A. Hết niên hạn sử dụng đối với các xe có niên hạn sử dụng theo quy định.", "B. Doanh nghiệp cung cấp dịch vụ hàng không không còn nhu cầu sử dụng phương tiện để hoạt động tại cảng hàng không, sân bay.", "C. Cả a và b đúng.", "D. Cả a và b sai."], c: 2 },
+                    { q: "Câu 3: Trong trường hợp tốc độ gió vượt quá bao nhiêu knots (hoặc km/h) thì phải thu các nhánh cầu ống dẫn khách về vị trí không khai thác và Ngưng khai thác cầu ống dẫn khách?", a: ["a. Từ 25 đến 39 kts (46 đến 72 km/h)", "b. Từ 40 đến 59 kts (73 đến 110 km/h)", "c. Từ 60 kts trở lên (từ 111 km/h)", "d. Cả a và b"], c: 2 },
+                    { q: "Câu 4: Thế nào là vị trí PARK (P) của cầu ống dẫn khách FMC?", a: ["a. Vị trí đỗ của nhánh L1, L2 cầu ống dẫn khách 19, 20, 21, 22", "b. Vị trí đỗ của cầu ống dẫn khách số 20, 21, 22 nhánh L1 khi phục vụ các chuyến bay đi/ đến Quốc tế", "c. Vị trí đỗ của cầu ống dẫn khách số 20, 21, 22 nhánh L2 khi phục vụ các chuyến bay đi/ đến Quốc tế", "d. Vị trí đỗ cho cầu ống dẫn khách số 19 nhánh L2 khi phục vụ các chuyến bay đi/ đến Quốc tế"], c: 0 },
+                    { q: "Câu 5: Thế nào là vị trí PARK TẠM (TP) của cầu ống dẫn khách FMC?", a: ["a. Vị trí đỗ của nhánh L1, L2 cầu ống dẫn khách 19, 20, 21, 22", "b. Vị trí đỗ của cầu ống dẫn khách số 20, 21, 22 nhánh L1 khi phục vụ các chuyến bay đi/ đến Quốc tế", "c. Vị trí đỗ của cầu ống dẫn khách số 20, 21, 22 nhánh L2 khi phục vụ các chuyến bay đi/ đến Quốc tế", "d. Vị trí đỗ cho cầu ống dẫn khách số 19 nhánh L2 khi phục vụ các chuyến bay đi/ đến Quốc tế"], c: 3 },
+                    { q: "Câu 6: Áp lực nước phải từ bao nhiêu PSI (Pounds per square inch) thì mới đạt để cấp cho tàu bay?", a: ["a. >= 35 PSI", "b. >= 38 PSI", "c. >= 45 PSI", "d. >= 50 PSI"], c: 1 },
+                    { q: "Câu 7: Góc quay của buồng lái cabin là bao nhiêu độ?", a: ["a. 185 độ", "b. 92,5 độ", "c. 125 độ", "d. 75 độ"], c: 2 },
+                    { q: "Câu 8: Khi đã cập cầu ống dẫn khách vào tàu bay mà hệ thống cầu ống dẫn khách bị cúp điện trong khoảng thời gian bao nhiêu thì nhân viên vận hành phải thông báo ngay?", a: ["a. Trên 2 phút", "b. Trên 3 phút", "c. Trên 4 phút", "d. Trên 5 phút"], c: 1 },
+                    { q: "Câu 9: Khả năng xoay của bánh lái tối đa là bao nhiêu độ?", a: ["a. 90 độ", "b. 180 độ", "c. 175 độ", "d. 125 độ"], c: 0 },
+                    { q: "Câu 10: Trong trường hợp tàu bay lăn vào vị trí đỗ nhanh hơn so với tốc độ quy định hệ thống VDGS hiển thị chữ gì?", a: ["a. Active", "b. Slow down", "c. Too Far", "d. Cả 3 câu trên đều đúng"], c: 1 },
+                    { q: "Câu 11: Hệ thống VDGS cung cấp các thông tin gì?", a: ["a. Hướng dẫn tàu bay đi đúng tim đường lăn", "b. Khoảng cách của tàu bay đến vị trí vạch dừng", "c. Khuyến cáo giảm tốc độ khi tàu bay lăn quá nhanh", "d. Cả 3 câu trên đều đúng"], c: 3 },
+                    { q: "Câu 12: Trong trường hợp nhập sai loại tàu bay lăn vào vị trí đỗ hệ thống VDGS hiển thị chữ gì?", a: ["a. Active", "b. ID Fail", "c. Too Far", "d. Cả 3 câu trên đều đúng"], c: 1 },
+                    { q: "Câu 13: Nhiệt độ chuẩn để cấp lạnh cho tàu bay là bao nhiêu?", a: ["a. 0 - 10 độ", "b. 5 - 12 độ", "c. 6 - 11 độ", "d. Cả 3 câu trên đều sai"], c: 0 },
+                    { q: "Câu 14: Nước sạch cấp cho tàu bay có cần phải xét nghiệm mẫu nước không?", a: ["a. Cần xét nghiệm", "b. Không cần vì nước sạch", "c. Phải được xét nghiệm định kỳ mỗi quý và có biên bản", "d. Không câu nào đúng"], c: 2 },
+                    { q: "Câu 15: Cầu ống dẫn khách ShinMayWa nhánh L1 thu vào tối đa bao nhiêu mét?", a: ["a. 20,4 m", "b. 20,8 m", "c. 20,9 m", "d. 20,1 m"], c: 0 },
+                    { q: "Câu 16: Nút “CAB ROTATE” trên bàn điều khiển của cầu ống dẫn khách FMC điều khiển chức năng gì?", a: ["a. Thu cầu ống dẫn khách về", "b. Nâng hạ cầu ống dẫn khách", "c. Xoay cabin sang trái, phải", "d. Vươn cầu ống dẫn khách ra"], c: 2 },
+                    { q: "Câu 17: Quy định nhân viên vận hành cầu ống dẫn khách phải kiểm tra tình trạng chung bằng trực quan trước khi tàu bay vào vị trí đỗ bao nhiêu phút?", a: ["a. Trước 05 phút", "b. Trước 10 phút", "c. Trước 15 phút", "d. Tùy theo từng loại tàu bay"], c: 1 },
+                    { q: "Câu 18: Thông số thiết bị cấp điện cho tàu bay nào dưới đây là đúng?", a: ["a. 220VAC - 50Hz", "b. 400VAC - 50Hz", "c. 200VAC - 400Hz", "d. 115VAC - 400Hz"], c: 3 },
+                    { q: "Câu 19: Trong quá trình cấp lạnh cho tàu bay có cần ghi lại thông số nhiệt độ lạnh không?", a: ["a. Không cần", "b. Không cần ghi vì nhiệt độ đạt", "c. Ghi nhận thời điểm phục vụ và thông số phục vụ 30 phút/lần", "d. Không cần ghi vì hệ thống vừa bảo trì xong"], c: 2 },
+                    { q: "Câu 20: Tốc độ cài đặt giới hạn cho phép tàu bay lăn vào vị trí đỗ có trang bị hệ thống VDGS tại Cảng HKQT Tân Sơn Nhất là bao nhiêu m/s?", a: ["a. Tốc độ tàu bay không vượt quá 4m/s trong khoảng cách đến 20m so với vạch dừng bánh mũi", "b. Tốc độ tàu bay không vượt quá 3m/s trong khoảng cách từ 20m đến 10m so với vạch dừng bánh mũi", "c. Tốc độ tàu bay không vượt quá 2m/s trong khoảng cách từ 10m đến 3m so với vạch dừng bánh mũi", "d. Cả 3 câu trên đều đúng"], c: 3 },
+                    { q: "Câu 21: Cơ chế hoạt động của cần “JOYSTICK”?", a: ["a. Có thể di chuyển cầu ống dẫn khách tiến lên, lùi lại", "b. Có thể di chuyển cầu ống dẫn khách sang trái, sang phải", "c. Có thể điều chỉnh tốc độ di chuyển", "d. Cả 3 câu trên đều đúng"], c: 3 },
+                    { q: "Câu 22: Khi đang dẫn tàu bay vào vị trí đỗ bằng hệ thống VDGS trường hợp nào phải sử dụng nút Emergency stop?", a: ["a. Tàu bay chạy nhanh", "b. Khi nhân viên phát hiện có chướng ngại vật hoặc tín hiệu ngừng khẩn cấp từ nhân viên mặt đất", "c. Tàu bay chạy nhanh chậm", "d. Cả 3 câu trên đều đúng"], c: 1 },
+                    { q: "Câu 23: Cầu ống dẫn khách ShinMayWa nhánh L2 thu vào tối đa bao nhiêu mét?", a: ["a. 20,4 m", "b. 20,6 m", "c. 20,8 m", "d. 20,9 m"], c: 2 },
+                    { q: "Câu 24: Độ cao hạ/nâng của cầu ống dẫn khách ShinMayWa tối đa bao nhiêu mét?", a: ["a. 1,2 - 5,9 m", "b. 1,8 - 5,4 m", "c. 1,9 - 5,6 m", "d. 1,8 - 5,5 m"], c: 1 },
+                    { q: "Câu 25: Tàu bay vào vị trí đỗ đúng vạch dừng khi nào nhân viên vận hành cầu ống dẫn khách được phép cập cầu ống dẫn khách vào tàu bay?", a: ["a. Động cơ tàu bay đã tắt, đèn chống va chạm đã tắt", "b. Tàu bay đã chèn bánh xong", "c. Nhân viên kỹ thuật hãng hàng không ra tín hiệu cho phép cập cầu", "d. Cả 3 câu trên đều đúng"], c: 3 },
+                    { q: "Câu 26: Các nút nhấn trên bàn điều khiển của hệ thống cầu ống dẫn khách ShinMayWa điều khiển chức năng gì?", a: ["a. Nâng hạ, xoay cabin, vươn thu mái che canopy, cân bằng sàn cabin", "b. Bật hệ thống chiếu sáng trong và ngoài cầu ống dẫn khách", "c. Bật hệ thống lạnh, quạt hút", "d. Cả 3 câu trên đều đúng"], c: 3 },
+                    { q: "Câu 27: Thế nào là vị trí PARK TẠM 1 (TP1) của cầu ống dẫn khách FMC?", a: ["a. Vị trí đỗ của nhánh L1, L2 cầu ống dẫn khách 19, 20, 21, 22", "b. Vị trí đỗ của cầu số 20, 21, 22 nhánh L1 khi phục vụ các chuyến bay Quốc tế", "c. Vị trí đỗ của cầu số 20, 21, 22 nhánh L2 khi phục vụ các chuyến bay Quốc tế", "d. Vị trí đỗ cho cầu ống dẫn khách số 19 nhánh L2 khi phục vụ các chuyến bay Quốc tế"], c: 1 },
+                    { q: "Câu 28: Trên màn hình chính của cầu ống dẫn khách ShinMayWa thể hiện chức năng gì?", a: ["a. Độ cao, độ dài của cầu ống dẫn khách", "b. Góc quay của bánh lái", "c. Nhiệt độ của cầu ống dẫn khách", "d. Cả a, b đều đúng"], c: 3 },
+                    { q: "Câu 29: Khi nào cần phải sử dụng chìa khóa khởi động để hạ hệ thống Autolevel của cầu ống dẫn khách ShinMayWa?", a: ["a. Chuẩn bị cập vào tàu bay", "b. Rút cầu ống dẫn khách ra khỏi tàu bay", "c. Khi đã cập vào đúng vị trí cửa tàu bay", "d. Cả 3 câu trên đều đúng"], c: 2 },
+                    { q: "Câu 30: Khoảng cách tối đa cho phép dừng giữa tâm bánh mũi của tàu bay so với tâm vạch dừng bánh mũi tại nhà ga Quốc nội từ vị trí số 19 - 22 là bao nhiêu mét?", a: ["a. Sai lệch + 1m (sau vạch dừng); - 1m (trước vạch dừng)", "b. Sai lệch + 1m (sau vạch dừng); - 0.5m (trước vạch dừng)", "c. Sai lệch + 0.6m (sau vạch dừng); - 0.5m (trước vạch dừng)", "d. Sai lệch + 0.5m (sau vạch dừng); - 0.5m (trước vạch dừng)"], c: 2 },
+                    { q: "Câu 31: Hãy liệt kê thứ tự các bước rút điện ra khỏi tàu bay tại cầu ống dẫn khách ShinMayWa?", a: ["a. Theo tín hiệu của thợ máy, nhân viên vận hành ngắt điện và thu cáp điện", "b. Thợ máy ra tín hiệu ngắt điện, nhân viên ngắt điện, tháo cáp ra khỏi ổ cắm, thu cáp về đúng vị trí", "c. Nhân viên ngắt điện và tháo dây điện ra khỏi ổ cắm của tàu bay", "d. Nhân viên ngắt điện và thu cáp điện về vị trí quy định"], c: 1 },
+                    { q: "Câu 32: Cầu ống dẫn khách ShinMayWa cho phép xoay bao nhiêu độ tính theo đường trục tim của hành lang cố định?", a: ["a. 87,5 độ theo chiều kim đồng hồ, 87,5 độ ngược chiều kim đồng hồ", "b. 65 độ theo chiều kim đồng hồ, 65 độ ngược chiều kim đồng hồ", "c. 75 độ theo chiều kim đồng hồ, 65 độ ngược chiều kim đồng hồ", "d. 65 độ theo chiều kim đồng hồ, 75 độ ngược chiều kim đồng hồ"], c: 0 },
+                    { q: "Câu 33: Sau khi hành khách đã lên hết, cửa tàu bay đã đóng và cầu đã rút về vị trí quy định, nhân viên vận hành cần kiểm tra nội dung gì?", a: ["a. Tất cả các cửa đảm bảo đã đóng", "b. Đèn, máy lạnh, quạt hút đã tắt", "c. Công tắc nguồn của cầu ống dẫn khách đã tắt", "d. Cả 3 câu trên đều đúng"], c: 3 },
+                    { q: "Câu 34: Khi đang vận hành cập cầu ống dẫn khách ShinMayWa vào tàu bay trường hợp nào sử dụng nút Emergency Stop?", a: ["a. Khi có sự cố kỹ thuật lệch cột, gặp chướng ngại vật hoặc mất lái", "b. Khi cầu ống dẫn khách báo lỗi đã được kiểm tra", "c. Khi tàu bay bị sự cố kỹ thuật và gặp chướng ngại vật", "d. Khi cầu ống dẫn khách báo lỗi màu vàng"], c: 0 },
+                    { q: "Câu 35: Nút “CAB FLOOR” trên bàn điều khiển của cầu ống dẫn khách ShinMayWa điều khiển chức năng gì?", a: ["a. Khởi động hệ thống", "b. Nâng hạ Cabin", "c. Khởi động hệ thống chiếu sáng", "d. Cân bằng sàn cabin cầu ống dẫn khách tiếp xúc với tàu bay"], c: 3 },
+                    { q: "Câu 36: Nút “TUNNEL” trên bàn điều khiển của cầu ống dẫn khách ShinMayWa điều khiển chức năng gì?", a: ["a. Thu cầu ống dẫn khách về", "b. Nâng hạ cầu ống dẫn khách", "c. Vươn cầu ống dẫn khách ra", "d. Xoay cabin sang trái, phải"], c: 1 },
+                    { q: "Câu 37: Nút “CAB” trên bàn điều khiển của cầu ống dẫn khách ShinMayWa điều khiển chức năng gì?", a: ["a. Thu cầu ống dẫn khách về", "b. Nâng hạ cầu ống dẫn khách", "c. Cân bằng sàn cabin", "d. Xoay cabin sang trái, phải"], c: 3 },
+                    { q: "Câu 38: Nhân viên vận hành có cần kiểm tra bên trong ống lạnh trước khi cấp lên cho tàu bay không?", a: ["a. Khi có yêu cầu", "b. Không cần thiết", "c. Nhấn nút AIR ON/START cho hệ thống chạy làm sạch ống khoảng 01 phút", "d. Không cần kiểm tra vì đã kiểm tra hôm qua tốt"], c: 2 },
+                    { q: "Câu 39: Khi đã hoàn tất cập cầu vào tàu bay nhân viên vận hành lưu ý kéo thanh chắn an toàn (barrier) áp sát vào thân tàu bay và cài chốt cho loại tàu bay nào?", a: ["a. Loại tàu bay mở cửa ra ngoài", "b. Các loại tàu bay mở cửa vào trong", "c. Tàu bay mở cửa ra ngoài có khoảng hở giữa mái che và mép cửa trên 15cm", "d. Cả b và c đều đúng"], c: 3 },
+                    { q: "Câu 40: Có cần đặt “SAFETY SHOE” dưới cửa tàu bay không (áp dụng cho loại tàu bay mở cửa ra ngoài)?", a: ["a. Không cần thiết", "b. Không cần vì có hệ thống Autolevel", "c. Không cần vì không ảnh hưởng cửa tàu bay", "d. Bắt buộc để đảm bảo an toàn cho cửa tàu bay"], c: 3 },
+                    { q: "Câu 41: Khi hệ thống cầu ống dẫn khách gặp sự cố, hư hỏng nhân viên vận hành cần thông báo cho ai?", a: ["a. Thợ sửa chữa, Ca trưởng", "b. Thợ sửa chữa, Trực Ban trưởng", "c. Ca trưởng, Thợ sửa chữa, Cán bộ Đội", "d. Ca trưởng, Cán bộ Đội, Trực Ban trưởng, Thợ sửa chữa"], c: 3 },
+                    { q: "Câu 42: Trong quá trình phục vụ khi cầu ống dẫn khách đã cập vào tàu bay nhân viên vận hành có được phép rời khỏi vị trí trực không?", a: ["a. Được phép", "b. Tuyệt đối không được phép", "c. Được phép vì có việc riêng", "d. Cả 3 câu trên đều sai"], c: 1 },
+                    { q: "Câu 43: Nếu phát hiện trên thân tàu bay bị móp, tróc sơn, vết lõm trước khi cập cầu, nhân viên cần thực hiện công việc gì?", a: ["a. Vẫn cập vào tàu bay để phục vụ", "b. Thông báo cho thợ máy hoặc đại diện hãng ký xác nhận rồi mới cập cầu", "c. Không được phép cập vào tàu bay", "d. Cả 3 câu đều sai"], c: 1 },
+                    { q: "Câu 44: Hình vẽ có mũi tên hướng xuống được hiểu như thế nào?", a: ["a. Cầu ống dẫn khách tiến ra", "b. Cầu ống dẫn khách thu vào", "c. Cầu ống dẫn khách nâng lên", "d. Cầu ống dẫn khách hạ xuống"], c: 3 },
+                    { q: "Câu 45: Hình vẽ có mũi tên hướng sang trái được hiểu như thế nào?", a: ["a. Cầu ống dẫn khách tiến ra", "b. Cầu ống dẫn khách thu vào", "c. Cầu ống dẫn khách dịch trái", "d. Cầu ống dẫn khách dịch phải"], c: 2 },
+                    { q: "Câu 46: Hình vẽ có mũi tên hướng sang phải được hiểu như thế nào?", a: ["a. Cầu ống dẫn khách tiến ra", "b. Cầu ống dẫn khách thu vào", "c. Cầu ống dẫn khách dịch trái", "d. Cầu ống dẫn khách dịch phải"], c: 3 },
+                    { q: "Câu 47: Đối với tàu bay B787 của Hãng Japan Airlines (JL), cầu ống dẫn khách ShinMayWa phục vụ như thế nào?", a: ["a. Cập nhánh L1 vào cửa L1 tàu bay", "b. Cập nhánh L2 vào cửa L2 tàu bay để phục vụ", "c. Cập nhánh L1, L2 vào tàu bay", "d. Tất cả các câu trên đều sai"], c: 1 },
+                    { q: "Câu 48: Đối với tàu bay B787-900 của Hãng Viet Nam Airlines (VN), cầu ống dẫn khách FMC phục vụ như thế nào?", a: ["a. Cập cả 2 nhánh L1, L2 vào cửa L1, L2 của tàu bay", "b. Cập nhánh L1 vào cửa L1 tàu bay", "c. Cập nhánh L2 vào cửa L2 tàu bay", "d. Tất cả các câu trên đều sai"], c: 0 },
+                    { q: "Câu 49: Khi cấp điện cho tàu bay có cần theo dõi thông số của hệ thống không?", a: ["a. Không cần thiết", "b. Ghi nhận thời điểm phục vụ và thông số phục vụ định kỳ 30 phút/lần", "c. Không cần vì hệ thống đang hoạt động", "d. Không cần vì hệ thống mới được bảo trì"], c: 1 },
+                    { q: "Câu 50: Tiến hành vươn cầu ống dẫn khách bằng cần Joystick lời nhắn về giới hạn nào có thể gặp?", a: ["a. Giới hạn góc nghiêng", "b. Giới hạn góc quay bánh lái", "c. Giới hạn độ cao", "d. Giới hạn vươn ra (extend limit)"], c: 3 },
+                    { q: "Câu 51: Liệt kê các thành phần chính của cầu ống dẫn khách?", a: ["a. Rotunda và Ống vươn - thu", "b. Cột nâng hạ và Bộ phận truyền động", "c. Cabin và Cầu thang bộ", "d. Cả 3 câu trên đều đúng"], c: 3 },
+                    { q: "Câu 52: Nút “VERTICAL DRIVE” trên bàn điều khiển của cầu ống dẫn khách FMC điều khiển chức năng gì?", a: ["a. Chuyển động ngang", "b. Xoay cabin", "c. Chuyển động dọc", "d. Nâng hạ cầu ống dẫn khách"], c: 2 },
+                    { q: "Câu 53: Sau khi phục vụ xong và rút cầu về vị trí quy định, công tác kiểm tra của Ca trưởng thực hiện như thế nào?", a: ["a. Không cần kiểm tra, giám sát", "b. Gọi điện thoại xác nhận", "c. Ký xác nhận giám sát vào sổ theo dõi B02.HD01/SGN-TĐH-PBB", "d. Ký xác nhận giám sát vào sổ theo dõi B01.HD01/SGN-TĐH-PBB"], c: 2 },
+                    { q: "Câu 54: Nếu phát hiện các đèn chiếu sáng trên thân tàu bay chưa tắt trước khi cập cầu, nhân viên cần thực hiện công việc gì?", a: ["a. Vẫn cập vào tàu bay để phục vụ", "b. Không được phép cập vào tàu bay", "c. Yêu cầu thợ máy tắt các đèn chiếu sáng đó rồi mới cập cầu", "d. Cả 3 câu đều sai"], c: 2 },
+                    { q: "Câu 55: Nhân viên vận hành cập cầu vào tàu bay trong thời gian bao lâu kể từ lúc nhận được tín hiệu “OK” từ Thợ máy?", a: ["a. Không quá 03 phút kể từ lúc nhận được tín hiệu", "b. Không quá 04 phút kể từ lúc nhận được tín hiệu", "c. Không quá 05 phút kể từ lúc nhận được tín hiệu", "d. Không quá 06 phút kể từ lúc nhận được tín hiệu"], c: 2 },
+                    { q: "Câu 56: Màn hình cảm ứng “TOUCH SCREEN” của cầu ống dẫn khách FMC điều khiển chức năng gì?", a: ["a. Hạ/thu Autolevel, đèn gầm, cân bằng sàn, quạt hút, chuông cảnh báo", "b. Nâng hạ và reset hệ thống", "c. Vươn thu và xoay cabin", "d. Cả 3 câu trên đều đúng"], c: 0 },
+                    { q: "Câu 57: Cầu ống dẫn khách ShinMayWa nhánh L1 vươn ra tối đa bao nhiêu mét?", a: ["a. 29,1 m", "b. 29,8 m", "c. 28,9 m", "d. 30,8 m"], c: 0 },
+                    { q: "Câu 58: Cầu ống dẫn khách ShinMayWa nhánh L2 vươn ra tối đa bao nhiêu mét?", a: ["a. 29,1 m", "b. 29,8 m", "c. 28,9 m", "d. 38,1 m"], c: 3 },
+                    { q: "Câu 59: Khi cầu ống dẫn khách đang di chuyển có được phép đi lên/xuống cầu thang bộ không?", a: ["a. Được phép", "b. Được phép khi nhân viên vận hành đồng ý", "c. Tuyệt đối không được phép", "d. Cả 3 câu trên đều sai"], c: 2 },
+                    { q: "Câu 60: Trong quá trình cấp điện cho tàu bay nhân viên vận hành có được phép rời khỏi vị trí trực không?", a: ["a. Được phép", "b. Tuyệt đối không được phép", "c. Được phép khi có yêu cầu", "d. Chỉ khi có yêu cầu của nhà khai thác"], c: 1 },
+                    { q: "Câu 61: Cabin của cầu ống dẫn khách phải luôn trong tình trạng như thế nào?", a: ["a. Cabin để ở hướng nào cũng được", "b. Cabin để ở hướng 14 giờ", "c. Luôn song song với tim đường lăn dẫn vào vị trí đỗ", "d. Câu a và b đúng"], c: 2 },
+                    { q: "Câu 62: Thông số kỹ thuật của cầu ống dẫn khách FMC số 20, 21, 22 nào sau đây là đúng?", a: ["a. Nhánh L1: Model A2-61/91-125R, nhánh L2: Model A2-65/99-125R", "b. Nhánh L1: Model A2-62/91-125R, nhánh L2: Model A2-66/99-125R", "c. Nhánh L1: Model A2-63/92-125R, nhánh L2: Model A2-64/98-125R", "d. Nhánh L1: Model A2-64/93-125R, nhánh L2: Model A2-66/99-125R"], c: 0 },
+                    { q: "Câu 63: Thông số kỹ thuật chung của hệ thống cầu ống dẫn khách nào sau đây là đúng?", a: ["a. Nhánh L1: Model A2-291PW, nhánh L2: Model A3-381PW", "b. Tải trọng sàn: 200kg/m2, tải trọng trần: 100kg/m2", "c. Chịu gió: Thu về 150 km/h, đang phục vụ 100 km/h; Nhiệt độ: 0-45 độ C", "d. Cả 3 câu trên đều đúng"], c: 3 },
+                    { q: "Câu 64: Ý nghĩa của hệ thống “AUTOLEVEL” là gì?", a: ["a. Giữ cân bằng cầu ống dẫn khách khỏi bị nghiêng", "b. Giữ cân bằng sàn cabin khi khách lên xuống", "c. Giữ cân bằng chiều cao sàn cabin so với tàu bay khi thay đổi tải trọng", "d. Cả 3 câu trên đều sai"], c: 2 },
+                    { q: "Câu 65: Bộ “ANTI COLLISION” có tác dụng gì?", a: ["a. Chống va chạm cầu ống dẫn khách với tàu bay", "b. Chống va chạm giữa hai nhánh cầu ống dẫn khách với nhau", "c. Chống va chạm vào chướng ngại vật xung quanh", "d. Cả 3 câu trên đều đúng"], c: 1 },
+                    { q: "Câu 66: Nhân viên vận hành hệ thống VDGS phải lưu ý các yêu cầu nào sau đây?", a: ["a. Đối với cầu 19, 20, 21, 22 phải về đúng vị trí đỗ Park (P) mới mở được VDGS", "b. Đối với cầu 11 đến 18 phải về đúng vị trí đỗ (Parking Position) mới mở được VDGS", "c. Đối với cầu 9, 10 phải về đúng vị trí đỗ (Park In) mới mở được VDGS", "d. Cả 3 câu trên đều đúng"], c: 3 },
+                    { q: "Câu 67: Tiến hành thu cầu ống dẫn khách bằng cần Joystick lời nhắn về giới hạn nào có thể gặp?", a: ["a. Giới hạn góc nghiêng", "b. Giới hạn góc quay bánh lái", "c. Giới hạn độ cao", "d. Giới hạn thu về (retract limit)"], c: 3 },
+                    { q: "Câu 68: Thang kỹ thuật sau khi phục vụ xong nhân viên phải thực hiện công việc gì?", a: ["a. Để ở bất cứ vị trí nào cũng trên sân đỗ", "b. Để tại khu vực tập kết trang thiết bị", "c. Để tại vị trí kẻ vẽ riêng cho thang kỹ thuật và cài chốt an toàn", "d. Cả 3 câu trên đều đúng"], c: 2 },
+                    { q: "Câu 69: Thế nào là vị trí PARK TẠM 2 (TP2) của cầu ống dẫn khách FMC?", a: ["a. Vị trí đỗ của nhánh L1, L2 cầu ống dẫn khách 19, 20, 21, 22", "b. Vị trí đỗ của cầu số 20, 21, 22 nhánh L1 khi phục vụ bay Quốc tế", "c. Vị trí đỗ của cầu số 20, 21, 22 nhánh L2 khi phục vụ bay Quốc tế", "d. Vị trí đỗ cho cầu số 19 nhánh L2 khi phục vụ các chuyến bay quốc tế"], c: 2 },
+                    { q: "Câu 70: Khi xuất hiện các cảnh báo trên màn hình điều khiển nhân viên vận hành phải làm gì?", a: ["a. Tiếp tục vận hành bình thường", "b. Dừng lại ngay lập tức và nhấn Emergency stop", "c. Dừng lại và thực hiện theo chỉ dẫn của thông báo lỗi", "d. Tất cả các câu trên đều sai"], c: 2 },
+                    { q: "Câu 71: Theo Hướng dẫn HD01/SGN-TĐH-PBB có bao nhiêu biểu mẫu kèm theo?", a: ["a. 05 biểu mẫu mã hóa và 03 biểu mẫu không mã hóa", "b. 06 biểu mẫu mã hóa và 02 biểu mẫu không mã hóa", "c. 07 biểu mẫu mã hóa và 03 biểu mẫu không mã hóa", "d. 08 biểu mẫu mã hóa và 02 biểu mẫu không mã hóa"], c: 3 },
+                    { q: "Câu 72: Theo quy định an toàn khi tiếp cận tàu bay phải đảm bảo yêu cầu như thế nào?", a: ["a. Tùy theo kinh nghiệm của người vận hành", "b. Theo yêu cầu của cán bộ trực ban", "c. Đảm bảo tấm cao su đệm ở khoảng cách an toàn không gây va chạm khi thay đổi tải trọng", "d. Cả 3 câu trên đều đúng"], c: 2 },
+                    { q: "Câu 73: Theo quy định an toàn khi di chuyển phục vụ tàu bay phải đảm bảo yêu cầu gì?", a: ["a. Phải bật chuông báo động", "b. Phải bật đèn cảnh báo", "c. Đảm bảo bề mặt đường bánh xe lăn qua không có FOD và chướng ngại vật", "d. Cả 3 câu trên đều đúng"], c: 3 },
+                    { q: "Câu 74: Trường hợp tàu bay lăn vào vị trí đỗ và quá vạch dừng (lố vạch), hệ thống VDGS hiển thị chữ gì?", a: ["a. Active", "b. ID Fail", "c. Too Far", "d. Cả 3 câu trên đều đúng"], c: 2 },
+                    { q: "Câu 75: Nhân viên vận hành bật hệ thống VDGS bao nhiêu phút trước khi tàu bay vào vị trí đỗ?", a: ["a. Trước 15 phút", "b. Trước 10 phút", "c. Trước 5 phút", "d. Cả 3 câu trên đều sai"], c: 1 },
+                    { q: "Câu 76: Khoảng cách tối đa dừng giữa tâm bánh mũi tàu bay so với tâm vạch dừng tại nhà ga Quốc tế vị trí 09 - 18 là bao nhiêu mét?", a: ["a. Sai lệch + 1.5m (sau vạch); - 1.5m (trước vạch)", "b. Sai lệch + 1m (sau vạch); - 1m (trước vạch)", "c. Sai lệch + 0.5m (sau vạch); - 0.5m (trước vạch)", "d. Sai lệch + 1m (sau vạch); - 0.5m (trước vạch)"], c: 3 },
+                    { q: "Câu 77: Đối với cầu ống dẫn khách FMC số 19 khai thác phục vụ loại tàu bay nào?", a: ["a. Tàu bay nhóm C (A321 và tương đương trở xuống)", "b. Khai thác phục vụ tất cả các loại tàu bay", "c. Khai thác phục vụ tàu bay nhóm E trở lên", "d. Tất cả các câu trên đều đúng"], c: 0 },
+                    { q: "Câu 78: Để phục vụ loại tàu bay 2 cửa, trong 2 nhánh cầu ống dẫn khách nhánh nào sẽ rút khỏi tàu bay trước?", a: ["a. Cả 2 nhánh rút cùng lúc", "b. Nhánh L1 rút trước", "c. Nhánh L2 rút trước", "d. Bất kỳ 1 trong 2 nhánh"], c: 2 },
+                    { q: "Câu 79: Để phục vụ loại tàu bay 2 cửa, trong 2 nhánh cầu ống dẫn khách nhánh nào sẽ cập vào tàu bay trước?", a: ["a. Cả 2 nhánh cập cùng lúc", "b. Nhánh L1 cập trước", "c. Nhánh L2 cập trước", "d. Bất kỳ 1 trong 2 nhánh"], c: 1 },
+                    { q: "Câu 80: Khi cấp nước sạch cho tàu bay nhân viên vận hành cần thực hiện yêu cầu nào?", a: ["a. Quan sát đồng hồ áp lực nước phải đạt >= 38 PSI", "b. Xả nước đầu vòi để làm sạch cặn trước khi gắn vào tàu bay", "c. Kiểm tra đảm bảo ống nước không bị rò rỉ khi cung cấp", "d. Cả 3 câu trên đều đúng"], c: 3 },
+                    { q: "Câu 81: Nêu chức trách, nhiệm vụ của nhân viên vận hành cầu ống dẫn khách?", a: ["a. Kiểm tra trang thiết bị, phương tiện hàng ngày trước khi vào ca", "b. Thực hiện công việc đúng quy trình và hướng dẫn công việc được giao", "c. Phối hợp tốt với các bộ phận liên quan để đạt hiệu quả cao", "d. Cả 3 câu trên đều đúng"], c: 3 },
+                    { q: "Câu 82: Công suất cấp điện cho tàu bay B777-200, A330 là bao nhiêu?", a: ["a. 180KVA", "b. 160KVA", "c. 140KVA", "d. 90KVA"], c: 2 },
+                    { q: "Câu 83: Công suất cấp điện cho tàu bay B737, A321 là bao nhiêu?", a: ["a. 180KVA", "b. 160KVA", "c. 140KVA", "d. 90KVA"], c: 3 },
+                    { q: "Câu 84: Công suất cấp điện cho tàu bay B787, A350 là bao nhiêu?", a: ["a. 180KVA", "b. 160KVA", "c. 140KVA", "d. 90KVA"], c: 0 },
+                    { q: "Câu 85: Loại tàu bay nào cập cầu vào cửa thứ 2 nhân viên phải đặc biệt cẩn thận đến phần góc cánh (wingroot)?", a: ["a. B747", "b. A340", "c. MD11", "d. B737"], c: 0 },
+                    { q: "Câu 86: Công suất cấp lạnh cho tàu bay B777-200, A330 là bao nhiêu?", a: ["a. 130 TON", "b. 120 TON", "c. 110 TON", "d. 65 TON"], c: 2 },
+                    { q: "Câu 87: Công suất cấp lạnh cho tàu bay B737, A321 là bao nhiêu?", a: ["a. 130 TON", "b. 120 TON", "c. 110 TON", "d. 65 TON"], c: 3 },
+                    { q: "Câu 88: Thông số kỹ thuật của cầu ống dẫn khách FMC số 19 nào sau đây là đúng?", a: ["a. Nhánh L1: Model A2-61/91-125R, nhánh L2: Model A2-65/99-125R", "b. Nhánh L1: Model A2-47/66-125R, nhánh L2: Model A2-61/91-125R", "c. Nhánh L1: Model A2-50/68-125R, nhánh L2: Model A2-64/92-125R", "d. Nhánh L1: Model A2-55/70-125R, nhánh L2: Model A2-66/96-125R"], c: 1 },
+                    { q: "Câu 89: Trường hợp tàu bay lăn vào lố vạch dừng hoặc chưa tới vạch dừng quy định, nhân viên vận hành xử lý như thế nào?", a: ["a. Giữ nguyên vị trí tàu bay và tiếp tục khai thác bình thường", "b. Báo Trực Ban trưởng sân bay để tàu bay được đẩy lùi hoặc kéo lên về đúng vạch dừng", "c. Thông báo cho Trực Ban trưởng sân bay tiến hành lập biên bản sự việc", "d. Cả b và c đều đúng"], c: 3 },
+                    { q: "Câu 90: Những điều gì lưu ý khi cập cầu ống dẫn khách vào tàu bay B737, B787?", a: ["a. Cẩn thận Anten tàu bay", "b. Cẩn thận cảnh báo Anti-collision", "c. Lưu ý cửa mở ra ngoài", "d. Cả 3 câu trên đều đúng"], c: 0 },
+                    { q: "Câu 91: Hình vẽ biểu tượng mũi tên hướng ra ngoài mặt phẳng được hiểu là gì?", a: ["a. Cầu ống dẫn khách tiến ra", "b. Cầu ống dẫn khách thu vào", "c. Vòm tiếp xúc (canopy) dãn ra", "d. Vòm tiếp xúc co vào"], c: 2 },
+                    { q: "Câu 92: Hình vẽ biểu tượng mũi tên hướng vào trong về phía mặt phẳng được hiểu là gì?", a: ["a. Cầu ống dẫn khách tiến ra", "b. Cầu ống dẫn khách thu vào", "c. Vòm tiếp xúc dãn ra", "d. Vòm tiếp xúc co vào"], c: 3 },
+                    { q: "Câu 93: Hình vẽ biểu tượng mũi tên hướng thẳng lên trên được hiểu là gì?", a: ["a. Cầu ống dẫn khách tiến ra", "b. Cầu ống dẫn khách thu vào", "c. Cầu ống dẫn khách nâng lên", "d. Cầu ống dẫn khách hạ xuống"], c: 2 },
+                    { q: "Câu 94: Theo quy định an toàn khi không phục vụ tàu bay, cầu phải đảm bảo yêu cầu gì?", a: ["a. Đỗ ở vị trí bất kỳ thuận tiện nhất", "b. Đỗ theo yêu cầu của nhân viên hãng", "c. Cầu ống dẫn khách phải đỗ đúng vị trí quy định (Parking Position)", "d. Cả 3 câu trên đều đúng"], c: 2 },
+                    { q: "Câu 95: Tuyệt đối không được điều khiển phương tiện chuyên ngành như thế nào khi tàu bay đang lăn vào vị trí đỗ bằng VDGS?", a: ["a. Chạy song song với tàu bay", "b. Dừng lại bên cạnh tàu bay", "c. Dừng lại quan sát từ xa", "d. Điều khiển phương tiện chạy cắt ngang qua tim đường lăn"], c: 3 },
+                    { q: "Câu 96: Theo quy định an toàn phải đảm bảo yêu cầu gì trước khi tàu bay vào vị trí đỗ?", a: ["a. Cầu ống dẫn khách đỗ đúng vị trí quy định", "b. Đảm bảo khu vực đỗ không có chướng ngại vật và FOD", "c. Cả a và b đều đúng", "d. Cả a và b đều sai"], c: 2 },
+                    { q: "Câu 97: Trước khi cấp điện cho tàu bay nhân viên vận hành phải kiểm tra thiết bị như thế nào?", a: ["a. Cáp điện không bị mòn, rách vỏ bọc cách điện", "b. Đầu cắm điện phải được lau sạch, khô và không bị hư hỏng", "c. Cả a và b đều đúng", "d. Câu a và b đều sai"], c: 2 },
+                    { q: "Câu 98: Trong quá trình cấp lạnh cho tàu bay nhân viên vận hành có được phép rời khỏi vị trí trực không?", a: ["a. Được phép", "b. Tuyệt đối không được phép", "c. Được phép vì có việc riêng", "d. Cả 3 câu trên đều sai"], c: 1 },
+                    { q: "Câu 99: Quy định về việc vận hành hệ thống cầu, cấp điện, lạnh, nước phải do nhân viên nào thực hiện?", a: ["a. Nhân viên có chứng chỉ chuyên môn Trung tâm Đào tạo cấp", "b. Nhân viên có giấy phép do Cục Hàng không Việt Nam cấp và còn hiệu lực", "c. Nhân viên được nhà sản xuất chứng nhận", "d. Cả 3 câu trên đều đúng"], c: 1 },
+                    { q: "Câu 100: Nếu cầu bị hỏng màn hình, mất điện và không thể rút ra khi đang phục vụ, nhân viên cần thực hiện gì?", a: ["a. Tự ý quyết định kéo lùi cầu ra khỏi tàu bay", "b. Thông báo Trực Ban, chuẩn bị xe đầu kéo, tắt nguồn chính và nối cần kéo chuyên dùng", "c. Giám sát nhân viên lái xe kéo cầu về vị trí đỗ quy định an toàn", "d. Cả b và c đều đúng"], c: 3 }
+                ]
+            }
+        };
+
+        let currentUsername = "";
+        let currentSubject = null;
+        let quizPool = [];
+        let currentIndex = 0;
+        let userAnswers = {};
+        let isSubmitted = false;
+
+        function getHistory(user, subId) {
+            const data = localStorage.getItem(`quiz_history_${user}_${subId}`);
+            return data ? JSON.parse(data) : [];
+        }
+
+        function saveHistory(user, subId, history) {
+            localStorage.setItem(`quiz_history_${user}_${subId}`, JSON.stringify(history));
+        }
+
+        function login() {
+            const input = document.getElementById('username-input').value.trim();
+            if (!input) {
+                alert("Vui lòng nhập tên người dùng!");
+                return;
+            }
+            currentUsername = input;
+            document.getElementById('display-name').innerText = currentUsername;
+            document.getElementById('logout-btn').classList.remove('hidden');
+            switchLevel(1);
+        }
+
+        function logout() {
+            currentUsername = "";
+            document.getElementById('username-input').value = "";
+            document.getElementById('logout-btn').classList.add('hidden');
+            switchLevel(0);
+        }
+
+        function selectSubject(id) {
+            currentSubject = id;
+            document.getElementById('subject-title').innerText = DATABASE[id].title;
+            const qCount = DATABASE[id].questions.length;
+            document.getElementById('btn-full-quiz').innerText = `📝 Làm toàn bộ ${qCount} câu`;
+            
+            const history = getHistory(currentUsername, currentSubject);
+            const historyInfo = document.getElementById('history-info');
+            if (history.length > 0 && history.length < qCount) {
+                historyInfo.innerText = `Lần trước bạn đã làm ${history.length}/${qCount} câu. Lần này sẽ ra 50 câu còn lại.`;
+            } else {
+                historyInfo.innerText = "Bắt đầu chu kỳ làm bài mới (Random 50 câu không trùng lặp).";
+            }
+            switchLevel(2);
+        }
+
+        function switchLevel(lv) {
+            const ids = ['level-0', 'level-1', 'level-2', 'level-3'];
+            ids.forEach((id, idx) => {
+                const el = document.getElementById(id);
+                el.classList.toggle('hidden', idx !== lv);
+                el.classList.toggle('flex', idx === lv);
+            });
+            document.getElementById('main-back-btn').classList.toggle('hidden', lv === 0 || lv === 1);
+        }
+
+        function startQuiz(mode) {
+            const fullList = DATABASE[currentSubject].questions;
+            const totalQs = fullList.length;
+
+            if (mode === 'random') {
+                let historyIndices = getHistory(currentUsername, currentSubject);
+                let availableIndices = [];
+                fullList.forEach((_, idx) => {
+                    if (!historyIndices.includes(idx)) availableIndices.push(idx);
+                });
+
+                if (availableIndices.length < 50) {
+                    historyIndices = [];
+                    availableIndices = fullList.map((_, idx) => idx);
+                }
+
+                availableIndices.sort(() => 0.5 - Math.random());
+                const selectedIndices = availableIndices.slice(0, 50);
+                quizPool = selectedIndices.map(idx => ({...fullList[idx], originalIndex: idx}));
+                const newHistory = [...historyIndices, ...selectedIndices];
+                saveHistory(currentUsername, currentSubject, newHistory);
+            } else {
+                quizPool = fullList.map((q, idx) => ({...q, originalIndex: idx}));
+            }
+
+            currentIndex = 0;
+            userAnswers = {};
+            isSubmitted = false;
+            document.getElementById('q-total-label').innerText = `/ ${quizPool.length}`;
+            document.getElementById('submit-btn').classList.remove('hidden');
+            document.getElementById('view-result-btn').classList.add('hidden');
+            document.getElementById('mode-selection').classList.remove('hidden');
+            document.getElementById('result-board').classList.add('hidden');
+            switchLevel(3);
+            renderQuestion();
+        }
+
+        function renderQuestion() {
+            const data = quizPool[currentIndex];
+            document.getElementById('q-idx-label').innerText = `Câu ${currentIndex + 1}`;
+            document.getElementById('question-text').innerText = data.q;
+            const container = document.getElementById('options-list');
+            container.innerHTML = '';
+            const labels = ['A', 'B', 'C', 'D'];
+            data.a.forEach((text, i) => {
+                const btn = document.createElement('button');
+                btn.className = getOptionClass(i);
+                btn.onclick = () => !isSubmitted && selectOption(i);
+                btn.innerHTML = `
+                    <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold mr-4 border-2 flex-shrink-0 ${getCircleClass(i)}">${labels[i]}</div>
+                    <span class="flex-1 text-left font-medium leading-tight">${text}</span>
+                    ${getStatusIcon(i)}
+                `;
+                container.appendChild(btn);
+            });
+        }
+
+        function getOptionClass(i) {
+            let base = "w-full p-4 rounded-2xl border-2 transition-all flex items-center ";
+            if (!isSubmitted) return base + (userAnswers[currentIndex] === i ? "border-indigo-500 bg-indigo-50" : "border-slate-100 bg-white hover:border-slate-300 shadow-sm");
+            const correct = quizPool[currentIndex].c;
+            if (i === correct) return base + "border-emerald-500 bg-emerald-50";
+            if (i === userAnswers[currentIndex]) return base + "border-red-500 bg-red-50";
+            return base + "border-slate-100 bg-white opacity-50";
+        }
+
+        function getCircleClass(i) {
+            if (!isSubmitted) return userAnswers[currentIndex] === i ? "bg-indigo-600 border-indigo-600 text-white" : "border-slate-200 text-slate-400";
+            if (i === quizPool[currentIndex].c) return "bg-emerald-500 border-emerald-500 text-white";
+            if (i === userAnswers[currentIndex]) return "bg-red-500 border-red-500 text-white";
+            return "border-slate-200 text-slate-300";
+        }
+
+        function getStatusIcon(i) {
+            if (!isSubmitted) return '';
+            if (i === quizPool[currentIndex].c) return '<span class="text-emerald-600 font-bold ml-2">✓</span>';
+            if (i === userAnswers[currentIndex]) return '<span class="text-red-500 font-bold ml-2">✗</span>';
+            return '';
+        }
+
+        function selectOption(i) { userAnswers[currentIndex] = i; renderQuestion(); }
+        function changeQuestion(step) {
+            const next = currentIndex + step;
+            if (next >= 0 && next < quizPool.length) { currentIndex = next; renderQuestion(); }
+        }
+
+        function confirmSubmit() {
+            const answeredCount = Object.keys(userAnswers).length;
+            const total = quizPool.length;
+            const msg = answeredCount < total ? `Bạn mới làm ${answeredCount}/${total} câu. Vẫn muốn nộp bài?` : "Bạn chắc chắn muốn nộp bài?";
+            if (confirm(msg)) submitQuiz();
+        }
+
+        function submitQuiz() {
+            isSubmitted = true;
+            let score = 0;
+            quizPool.forEach((q, i) => { if (userAnswers[i] === q.c) score++; });
+            document.getElementById('final-score').innerText = `${score}/${quizPool.length}`;
+            const status = document.getElementById('result-status');
+            const pass = score >= (quizPool.length * 0.8);
+            status.innerText = pass ? "ĐẠT" : "CHƯA ĐẠT";
+            status.className = `inline-block px-4 py-1 rounded-full text-sm font-bold mb-4 ${pass ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}`;
+            showResults();
+        }
+
+        function showResults() {
+            if (isSubmitted) {
+                renderResultGrid();
+                document.getElementById('mode-selection').classList.add('hidden');
+                document.getElementById('result-board').classList.remove('hidden');
+                document.getElementById('result-board').classList.add('flex');
+            }
+            switchLevel(2);
+        }
+
+        function renderResultGrid() {
+            const grid = document.getElementById('result-grid');
+            grid.innerHTML = '';
+            quizPool.forEach((q, i) => {
+                const item = document.createElement('div');
+                let color = "bg-slate-100 text-slate-400";
+                if (userAnswers[i] === q.c) color = "bg-emerald-500 text-white";
+                else if (userAnswers[i] !== undefined) color = "bg-red-500 text-white";
+                item.className = `h-10 rounded-lg flex items-center justify-center font-bold text-xs cursor-pointer ${color}`;
+                item.innerText = i + 1;
+                item.onclick = () => { currentIndex = i; switchLevel(3); renderQuestion(); document.getElementById('submit-btn').classList.add('hidden'); document.getElementById('view-result-btn').classList.remove('hidden'); };
+                grid.appendChild(item);
+            });
+        }
+
+        function handleBack() {
+            const lv3 = !document.getElementById('level-3').classList.contains('hidden');
+            const lv2 = !document.getElementById('level-2').classList.contains('hidden');
+            if (lv3) { if (isSubmitted || confirm("Thoát bài thi?")) switchLevel(2); }
+            else if (lv2) switchLevel(1);
+        }
+        function goHome() { switchLevel(1); }
+        function resetApp() { startQuiz(quizPool.length === 50 ? 'random' : 'full'); }
+    </script>
+</body>
+</html>
