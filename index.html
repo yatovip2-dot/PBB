@@ -17,6 +17,18 @@
 </head>
 <body class="bg-slate-50 min-h-screen flex flex-col items-center p-4 font-sans select-none">
 
+    <!-- MODAL HỆ THỐNG -->
+    <div id="custom-modal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl animate-slide-in">
+            <h3 id="modal-title" class="text-xl font-bold text-slate-800 mb-2">Thông báo</h3>
+            <p id="modal-message" class="text-slate-600 mb-6"></p>
+            <div id="modal-footer" class="flex gap-3">
+                <button id="modal-cancel" class="flex-1 px-4 py-2 rounded-xl bg-slate-100 font-bold text-slate-600">Hủy</button>
+                <button id="modal-confirm" class="flex-1 px-4 py-2 rounded-xl bg-indigo-600 font-bold text-white">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+
     <!-- NÚT THOÁT / ĐĂNG XUẤT -->
     <div class="fixed top-4 left-4 flex gap-2 z-50">
         <button id="main-back-btn" onclick="handleBack()" class="hidden bg-white px-5 py-2.5 rounded-full shadow-md hover:shadow-lg transition-all duration-200 font-bold text-slate-600 flex items-center gap-2 border border-slate-200">
@@ -50,7 +62,7 @@
             </button>
             <button onclick="selectSubject(2)" class="group w-64 h-64 bg-white border-b-4 border-orange-500 rounded-2xl shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all p-6 flex flex-col items-center justify-center text-center">
                 <div class="text-5xl mb-4 group-hover:scale-110 transition-transform">🖐️</div>
-                <span class="text-xl font-bold text-slate-700">Chỉ tay cơ bản <br>(Cầu ống dẫn khách)</span>
+                <span class="text-xl font-bold text-slate-700">Cầu ống dẫn khách</span>
             </button>
         </div>
     </div>
@@ -119,17 +131,17 @@
                 ]
             },
             2: {
-                title: "Chỉ tay cơ bản (Cầu dẫn)",
+                title: "Cầu ống dẫn khách",
                 questions: [
-                    { q: "Câu 1: Trong trường hợp tốc độ gió vượt quá bao nhiêu knots (hoặc km/h) thì cầu ống dẫn khách sau khi cập vào tàu bay phải được chèn bánh và hệ thống điều khiển phải được khóa để tránh tác động ngoài ý muốn?", a: ["a. Từ 25 đến 39 kts (46 đến 72 km/h)", "b. Từ 40 đến 59 kts (73 đến 110 km/h)", "c. Từ 60 kts trở lên (từ 111 km/h)", "d. Cả a và b."], c: 0 },
+                    { q: "Câu 1: Trong trường hợp tốc độ gió vượt quá bao nhiêu knots (hoặc km/h) thì cầu ống dẫn khách sau khi cập vào tàu bay phải được chèn bánh và hệ thống điều khiển phải được khóa để tránh tác động ngoài ý muốn? (48 km/h)", a: ["a. Từ 25 đến 39 kts (46 đến 72 km/h)", "b. Từ 40 đến 59 kts (73 đến 110 km/h)", "c. Từ 60 kts trở lên (từ 111 km/h)", "d. Cả a và b."], c: 0 },
                     { q: "Câu 2: Trong trường hợp tốc độ gió vượt quá bao nhiêu knots (hoặc km/h) thì cầu hành khách phải được cố định chắc chắn (bao gồm chèn bánh và khóa hệ thống điều khiển). Khi có điều kiện, thực hiện biện pháp quay cầu để hạn chế diện tích hứng gió; góc quay không vượt quá 87,5°, trừ khi thông số kỹ thuật của nhà sản xuất cho phép. Cầu hành khách vẫn có thể khai thác, nhưng các hoạt động phải được kiểm soát chặt chẽ nhằm đảm bảo an toàn. (96 km/h)", a: [ "A. Từ 25 đến 39 kts (46 đến 72 km/h).", "B. Từ 40 đến 59 kts (73 đến 110 km/h).", "C. Từ 60 kts trở lên (từ 111 km/h).", "D. Cả a và b."], c: 2 },
-                    { q: "Câu 3: Trong trường hợp tốc độ gió vượt quá bao nhiêu knots (hoặc km/h) thì phải thu các nhánh cầu ống dẫn khách về vị trí không khai thác và Ngưng khai thác cầu ống dẫn khách?", a: ["a. Từ 25 đến 39 kts (46 đến 72 km/h)", "b. Từ 40 đến 59 kts (73 đến 110 km/h)", "c. Từ 60 kts trở lên (từ 111 km/h)", "d. Cả a và b"], c: 2 },
+                    { q: "Câu 3: Trong trường hợp tốc độ gió vượt quá bao nhiêu knots (hoặc km/h) thì phải thu các nhánh cầu ống dẫn khách về vị trí không khai thác và Ngưng khai thác cầu ống dẫn khách? (144 km/h)", a: ["a. Từ 25 đến 39 kts (46 đến 72 km/h)", "b. Từ 40 đến 59 kts (73 đến 110 km/h)", "c. Từ 60 kts trở lên (từ 111 km/h)", "d. Cả a và b"], c: 2 },
                     { q: "Câu 4: Thế nào là vị trí PARK (P) của cầu ống dẫn khách FMC?", a: ["a. Vị trí đỗ của nhánh L1, L2 cầu ống dẫn khách 19, 20, 21, 22", "b. Vị trí đỗ của cầu ống dẫn khách số 20, 21, 22 nhánh L1 khi phục vụ các chuyến bay đi/ đến Quốc tế", "c. Vị trí đỗ của cầu ống dẫn khách số 20, 21, 22 nhánh L2 khi phục vụ các chuyến bay đi/ đến Quốc tế", "d. Vị trí đỗ cho cầu ống dẫn khách số 19 nhánh L2 khi phục vụ các chuyến bay đi/ đến Quốc tế"], c: 0 },
                     { q: "Câu 5: Thế nào là vị trí PARK TẠM (TP) của cầu ống dẫn khách FMC?", a: ["a. Vị trí đỗ của nhánh L1, L2 cầu ống dẫn khách 19, 20, 21, 22", "b. Vị trí đỗ của cầu ống dẫn khách số 20, 21, 22 nhánh L1 khi phục vụ các chuyến bay đi/ đến Quốc tế", "c. Vị trí đỗ của cầu ống dẫn khách số 20, 21, 22 nhánh L2 khi phục vụ các chuyến bay đi/ đến Quốc tế", "d. Vị trí đỗ cho cầu ống dẫn khách số 19 nhánh L2 khi phục vụ các chuyến bay đi/ đến Quốc tế"], c: 3 },
                     { q: "Câu 6: Áp lực nước phải từ bao nhiêu PSI (Pounds per square inch) thì mới đạt để cấp cho tàu bay?", a: ["a. >= 35 PSI", "b. >= 38 PSI", "c. >= 45 PSI", "d. >= 50 PSI"], c: 1 },
                     { q: "Câu 7: Góc quay của buồng lái cabin là bao nhiêu độ?", a: ["a. 185 độ", "b. 92,5 độ", "c. 125 độ", "d. 75 độ"], c: 2 },
                     { q: "Câu 8: Khi đã cập cầu ống dẫn khách vào tàu bay mà hệ thống cầu ống dẫn khách bị cúp điện trong khoảng thời gian bao nhiêu thì nhân viên vận hành phải thông báo ngay?", a: ["a. Trên 2 phút", "b. Trên 3 phút", "c. Trên 4 phút", "d. Trên 5 phút"], c: 1 },
-                    { q: "Câu 9: Khả năng xoay của bánh lái tối đa là bao nhiêu độ?", a: ["a. 90 độ", "b. 180 độ", "c. 175 độ", "d. 125 độ"], c: 0 },
+                    { q: "Câu 9: Khả năng xoay của bánh lái tối đa là bao nhiêu độ?", a: ["a. 90 độ", "b. 180 độ", "c. 175 độ", "d. 125 độ"], c: 1 },
                     { q: "Câu 10: Trong trường hợp tàu bay lăn vào vị trí đỗ nhanh hơn so với tốc độ quy định hệ thống VDGS hiển thị chữ gì?", a: ["a. Active", "b. Slow down", "c. Too Far", "d. Cả 3 câu trên đều đúng"], c: 1 },
                     { q: "Câu 11: Hệ thống VDGS cung cấp các thông tin gì?", a: ["a. Hướng dẫn tàu bay đi đúng tim đường lăn", "b. Khoảng cách của tàu bay đến vị trí vạch dừng", "c. Khuyến cáo giảm tốc độ khi tàu bay lăn quá nhanh", "d. Cả 3 câu trên đều đúng"], c: 3 },
                     { q: "Câu 12: Trong trường hợp nhập sai loại tàu bay lăn vào vị trí đỗ hệ thống VDGS hiển thị chữ gì?", a: ["a. Active", "b. ID Fail", "c. Too Far", "d. Cả 3 câu trên đều đúng"], c: 1 },
@@ -172,7 +184,7 @@
                     { q: "Câu 49: Khi cấp điện cho tàu bay có cần theo dõi thông số của hệ thống không?", a: ["a. Không cần thiết", "b. Ghi nhận thời điểm phục vụ và thông số phục vụ định kỳ 30 phút/lần", "c. Không cần vì hệ thống đang hoạt động", "d. Không cần vì hệ thống mới được bảo trì"], c: 1 },
                     { q: "Câu 50: Tiến hành vươn cầu ống dẫn khách bằng cần Joystick lời nhắn về giới hạn nào có thể gặp?", a: ["a. Giới hạn góc nghiêng", "b. Giới hạn góc quay bánh lái", "c. Giới hạn độ cao", "d. Giới hạn vươn ra (extend limit)"], c: 3 },
                     { q: "Câu 51: Liệt kê các thành phần chính của cầu ống dẫn khách?", a: ["a. Rotunda và Ống vươn - thu", "b. Cột nâng hạ và Bộ phận truyền động", "c. Cabin và Cầu thang bộ", "d. Cả 3 câu trên đều đúng"], c: 3 },
-                    { q: "Câu 52: Nút “VERTICAL DRIVE” trên bàn điều khiển của cầu ống dẫn khách FMC điều khiển chức năng gì?", a: ["a. Chuyển động ngang", "b. Xoay cabin", "c. Chuyển động dọc", "d. Nâng hạ cầu ống dẫn khách"], c: 2 },
+                    { q: "Câu 52: Nút “VERTICAL DRIVE” trên bàn điều khiển của cầu ống dẫn khách FMC điều khiển chức năng gì?", a: ["a. Chuyển động ngang", "b. Xoay cabin", "c. Chuyển động dọc", "d. Nâng hạ cầu ống dẫn khách"], c: 3 },
                     { q: "Câu 53: Sau khi phục vụ xong và rút cầu về vị trí quy định, công tác kiểm tra của Ca trưởng thực hiện như thế nào?", a: ["a. Không cần kiểm tra, giám sát", "b. Gọi điện thoại xác nhận", "c. Ký xác nhận giám sát vào sổ theo dõi B02.HD01/SGN-TĐH-PBB", "d. Ký xác nhận giám sát vào sổ theo dõi B01.HD01/SGN-TĐH-PBB"], c: 2 },
                     { q: "Câu 54: Nếu phát hiện các đèn chiếu sáng trên thân tàu bay chưa tắt trước khi cập cầu, nhân viên cần thực hiện công việc gì?", a: ["a. Vẫn cập vào tàu bay để phục vụ", "b. Không được phép cập vào tàu bay", "c. Yêu cầu thợ máy tắt các đèn chiếu sáng đó rồi mới cập cầu", "d. Cả 3 câu đều sai"], c: 2 },
                     { q: "Câu 55: Nhân viên vận hành cập cầu vào tàu bay trong thời gian bao lâu kể từ lúc nhận được tín hiệu “OK” từ Thợ máy?", a: ["a. Không quá 03 phút kể từ lúc nhận được tín hiệu", "b. Không quá 04 phút kể từ lúc nhận được tín hiệu", "c. Không quá 05 phút kể từ lúc nhận được tín hiệu", "d. Không quá 06 phút kể từ lúc nhận được tín hiệu"], c: 2 },
@@ -231,6 +243,27 @@
         let currentIndex = 0;
         let userAnswers = {};
         let isSubmitted = false;
+        let currentMode = 'full';
+
+        // Hệ thống Modal Tùy Chỉnh
+        function showModal(title, message, onConfirm = null, showCancel = false) {
+            const modal = document.getElementById('custom-modal');
+            document.getElementById('modal-title').innerText = title;
+            document.getElementById('modal-message').innerText = message;
+            const btnConfirm = document.getElementById('modal-confirm');
+            const btnCancel = document.getElementById('modal-cancel');
+
+            modal.classList.remove('hidden');
+            btnCancel.classList.toggle('hidden', !showCancel);
+
+            btnConfirm.onclick = () => {
+                modal.classList.add('hidden');
+                if (onConfirm) onConfirm();
+            };
+            btnCancel.onclick = () => {
+                modal.classList.add('hidden');
+            };
+        }
 
         function getHistory(user, subId) {
             const data = localStorage.getItem(`quiz_history_${user}_${subId}`);
@@ -244,7 +277,7 @@
         function login() {
             const input = document.getElementById('username-input').value.trim();
             if (!input) {
-                alert("Vui lòng nhập tên người dùng!");
+                showModal("Lỗi", "Vui lòng nhập tên người dùng!");
                 return;
             }
             currentUsername = input;
@@ -269,9 +302,9 @@
             const history = getHistory(currentUsername, currentSubject);
             const historyInfo = document.getElementById('history-info');
             if (history.length > 0 && history.length < qCount) {
-                historyInfo.innerText = `Lần trước bạn đã làm ${history.length}/${qCount} câu. Lần này sẽ ra 50 câu còn lại.`;
+                historyInfo.innerText = `Lần trước bạn đã làm ${history.length}/${qCount} câu. Lần này sẽ ra các câu còn lại.`;
             } else {
-                historyInfo.innerText = "Bắt đầu chu kỳ làm bài mới (Random 50 câu không trùng lặp).";
+                historyInfo.innerText = "Bắt đầu chu kỳ làm bài mới.";
             }
             switchLevel(2);
         }
@@ -287,6 +320,7 @@
         }
 
         function startQuiz(mode) {
+            currentMode = mode;
             const fullList = DATABASE[currentSubject].questions;
             const totalQs = fullList.length;
 
@@ -297,16 +331,15 @@
                     if (!historyIndices.includes(idx)) availableIndices.push(idx);
                 });
 
-                if (availableIndices.length < 50) {
+                if (availableIndices.length === 0 || totalQs <= 50) {
                     historyIndices = [];
                     availableIndices = fullList.map((_, idx) => idx);
                 }
 
                 availableIndices.sort(() => 0.5 - Math.random());
-                const selectedIndices = availableIndices.slice(0, 50);
+                const limit = Math.min(50, availableIndices.length);
+                const selectedIndices = availableIndices.slice(0, limit);
                 quizPool = selectedIndices.map(idx => ({...fullList[idx], originalIndex: idx}));
-                const newHistory = [...historyIndices, ...selectedIndices];
-                saveHistory(currentUsername, currentSubject, newHistory);
             } else {
                 quizPool = fullList.map((q, idx) => ({...q, originalIndex: idx}));
             }
@@ -330,6 +363,7 @@
             const container = document.getElementById('options-list');
             container.innerHTML = '';
             const labels = ['A', 'B', 'C', 'D'];
+            
             data.a.forEach((text, i) => {
                 const btn = document.createElement('button');
                 btn.className = getOptionClass(i);
@@ -367,6 +401,7 @@
         }
 
         function selectOption(i) { userAnswers[currentIndex] = i; renderQuestion(); }
+        
         function changeQuestion(step) {
             const next = currentIndex + step;
             if (next >= 0 && next < quizPool.length) { currentIndex = next; renderQuestion(); }
@@ -376,13 +411,20 @@
             const answeredCount = Object.keys(userAnswers).length;
             const total = quizPool.length;
             const msg = answeredCount < total ? `Bạn mới làm ${answeredCount}/${total} câu. Vẫn muốn nộp bài?` : "Bạn chắc chắn muốn nộp bài?";
-            if (confirm(msg)) submitQuiz();
+            showModal("Nộp bài", msg, submitQuiz, true);
         }
 
         function submitQuiz() {
             isSubmitted = true;
             let score = 0;
             quizPool.forEach((q, i) => { if (userAnswers[i] === q.c) score++; });
+            
+            if (currentMode === 'random') {
+                let historyIndices = getHistory(currentUsername, currentSubject);
+                const currentIndices = quizPool.map(q => q.originalIndex);
+                saveHistory(currentUsername, currentSubject, [...new Set([...historyIndices, ...currentIndices])]);
+            }
+
             document.getElementById('final-score').innerText = `${score}/${quizPool.length}`;
             const status = document.getElementById('result-status');
             const pass = score >= (quizPool.length * 0.8);
@@ -397,6 +439,8 @@
                 document.getElementById('mode-selection').classList.add('hidden');
                 document.getElementById('result-board').classList.remove('hidden');
                 document.getElementById('result-board').classList.add('flex');
+                document.getElementById('submit-btn').classList.add('hidden');
+                document.getElementById('view-result-btn').classList.remove('hidden');
             }
             switchLevel(2);
         }
@@ -411,7 +455,11 @@
                 else if (userAnswers[i] !== undefined) color = "bg-red-500 text-white";
                 item.className = `h-10 rounded-lg flex items-center justify-center font-bold text-xs cursor-pointer ${color}`;
                 item.innerText = i + 1;
-                item.onclick = () => { currentIndex = i; switchLevel(3); renderQuestion(); document.getElementById('submit-btn').classList.add('hidden'); document.getElementById('view-result-btn').classList.remove('hidden'); };
+                item.onclick = () => { 
+                    currentIndex = i; 
+                    switchLevel(3); 
+                    renderQuestion(); 
+                };
                 grid.appendChild(item);
             });
         }
@@ -419,11 +467,18 @@
         function handleBack() {
             const lv3 = !document.getElementById('level-3').classList.contains('hidden');
             const lv2 = !document.getElementById('level-2').classList.contains('hidden');
-            if (lv3) { if (isSubmitted || confirm("Thoát bài thi?")) switchLevel(2); }
+            if (lv3) { 
+                if (isSubmitted) {
+                    switchLevel(2); 
+                } else {
+                    showModal("Thoát", "Bạn muốn thoát bài thi đang làm?", () => switchLevel(2), true);
+                }
+            }
             else if (lv2) switchLevel(1);
         }
+
         function goHome() { switchLevel(1); }
-        function resetApp() { startQuiz(quizPool.length === 50 ? 'random' : 'full'); }
+        function resetApp() { startQuiz(currentMode); }
     </script>
 </body>
 </html>
